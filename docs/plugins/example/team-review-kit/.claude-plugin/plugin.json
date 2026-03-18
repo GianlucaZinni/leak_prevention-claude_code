@@ -1,0 +1,8 @@
+{
+  "name": "team-review-kit",
+  "description": "Shared review workflow for engineering teams",
+  "version": "1.0.0",
+  "author": {
+    "name": "Platform Engineering"
+  }
+}

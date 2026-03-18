@@ -1,0 +1,50 @@
+{
+  "__comment": "Copy this file to .claude/settings.local.json on your machine.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(pnpm *)",
+      "Bash(git *)",
+      "Edit",
+      "Write",
+      "Read"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(dd *)",
+      "Bash(mkfs.*)"
+    ],
+    "ask": [
+      "Bash(npm run build)",
+      "Bash(docker build)",
+      "Bash(cargo build --release)"
+    ]
+  },
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres"
+      ],
+      "env": {
+        "DATABASE_URL": "postgresql://localhost:5432/dev_db"
+      }
+    }
+  }
+}

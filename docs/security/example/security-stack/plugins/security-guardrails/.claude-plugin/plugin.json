@@ -1,0 +1,5 @@
+{
+  "name": "security-guardrails",
+  "description": "Shared security controls for Claude Code sessions",
+  "version": "1.0.0"
+}

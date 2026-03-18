@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "analytics-agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-response-metrics.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

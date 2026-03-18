@@ -1,0 +1,31 @@
+# Developer profile template
+# Copy this file and save it as .claude/profiles/<your-name>.yaml
+
+profile:
+  name: "developer-name"
+  role: "fullstack" # frontend | backend | fullstack | devops | ml
+  seniority: "senior" # junior | mid | senior | staff
+  tools:
+    primary_lang: "typescript"
+    frontend: "react"
+    backend: "node"
+    database: "postgres"
+    cloud: "aws"
+    test_framework: "vitest"
+  style:
+    verbosity: "concise" # verbose | concise | minimal
+    comment_style: "inline" # none | inline | jsdoc
+    test_coverage: "required" # none | optional | required
+
+modules:
+  include:
+    - shared/core-rules.md
+    - shared/git-conventions.md
+    - shared/security-rules.md
+    - frontend/react-patterns.md
+    - backend/api-design.md
+  exclude: []
+
+overrides:
+  custom_rules: []
+

@@ -1,0 +1,99 @@
+name: Context Drift Check
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      project_dir:
+        description: "Project directory to check"
+        required: false
+        default: "."
+
+env:
+  CLAUDE_MD_MAX_LINES: 500
+  CLAUDE_MD_WARN_LINES: 400
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Make canary executable
+        run: chmod +x ./context-engineering/canary-check.sh
+
+      - name: Run canary checks
+        id: canary
+        run: |
+          PROJECT_DIR="${{ github.event.inputs.project_dir || '.' }}"
+          ./context-engineering/canary-check.sh "$PROJECT_DIR"
+        continue-on-error: true
+
+      - name: Size check
+        id: size_check
+        run: |
+          FILE="CLAUDE.md"
+          if [ ! -f "$FILE" ]; then
+            echo "size_status=missing" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CURRENT=$(wc -l < "$FILE" | tr -d ' ')
+          echo "current_lines=$CURRENT" >> "$GITHUB_OUTPUT"
+
+          if [ "$CURRENT" -gt "$CLAUDE_MD_MAX_LINES" ]; then
+            echo "size_status=fail" >> "$GITHUB_OUTPUT"
+          elif [ "$CURRENT" -gt "$CLAUDE_MD_WARN_LINES" ]; then
+            echo "size_status=warn" >> "$GITHUB_OUTPUT"
+          else
+            echo "size_status=ok" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Import check
+        id: import_check
+        run: |
+          FILE="CLAUDE.md"
+          if [ ! -f "$FILE" ]; then
+            echo "broken_imports=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BROKEN=0
+          while IFS= read -r line; do
+            if [[ "$line" =~ ^@([^[:space:]].+)$ ]]; then
+              IMPORT="${BASH_REMATCH[1]}"
+              if [ ! -f "$IMPORT" ]; then
+                BROKEN=$((BROKEN + 1))
+              fi
+            fi
+          done < "$FILE"
+
+          echo "broken_imports=$BROKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Final status
+        if: always()
+        run: |
+          CANARY_STATUS="${{ steps.canary.outcome }}"
+          BROKEN_IMPORTS="${{ steps.import_check.outputs.broken_imports || 0 }}"
+          SIZE_STATUS="${{ steps.size_check.outputs.size_status || 'ok' }}"
+
+          ISSUES=0
+          [ "$CANARY_STATUS" = "failure" ] && ISSUES=$((ISSUES + 1))
+          [ "$BROKEN_IMPORTS" -gt 0 ] && ISSUES=$((ISSUES + BROKEN_IMPORTS))
+          [ "$SIZE_STATUS" = "fail" ] && ISSUES=$((ISSUES + 1))
+
+          if [ "$ISSUES" -gt 0 ]; then
+            echo "Context drift check: FAILED ($ISSUES issues)"
+            exit 1
+          fi
+
+          echo "Context drift check: PASSED"
+

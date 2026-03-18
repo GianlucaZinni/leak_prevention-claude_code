@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "serena",
+        "--project-root",
+        "."
+      ],
+      "description": "Codebase indexation and session memory"
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "description": "Library documentation lookup"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic/playwright-mcp"
+      ],
+      "description": "Browser automation and testing"
+    }
+  }
+}
